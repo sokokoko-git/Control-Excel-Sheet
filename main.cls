@@ -121,8 +121,8 @@ Application.EnableEvents = False
 
     ' 4b. メモ列の追加 (I列)、プルダウンリスト設定、セルを緑色に設定
     newWs.Columns("I").Insert
-    newWs.Range("I1").Value = "memo"
-    newWs.Range("I:I").Interior.Color = RGB(0, 255, 0) ' 緑
+    newWs.Range("I1").Value = "Note"
+    newWs.Range("I1").Interior.Color = RGB(0, 255, 0) ' 緑
     With newWs.Range("I2:I" & outputRow - 1).Validation
         .Delete
         .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:=xlBetween, _
