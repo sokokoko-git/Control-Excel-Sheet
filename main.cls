@@ -119,17 +119,43 @@ Application.EnableEvents = False
     newWs.Range("G1").Value = "Qty.BOM Data"
     newWs.Range("G1").Interior.Color = RGB(255, 165, 0) ' オレンジ
 
-    ' 4b. メモ列の追加 (I列)、プルダウンリスト設定、セルを緑色に設定
+    ' 4b. 追加情報列の挿入 (I列) と別ファイルからの値の取得
     newWs.Columns("I").Insert
     newWs.Range("I1").Value = "Note"
     newWs.Range("I1").Interior.Color = RGB(0, 255, 0) ' 緑
-    With newWs.Range("I2:I" & outputRow - 1).Validation
-        .Delete
-        .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:=xlBetween, _
-            Formula1:="Option1,Option2,Option3"
-        .IgnoreBlank = True
-        .InCellDropdown = True
-    End With
+
+    ' 追加で読み込むブックを選択し、A列をキーとしてT列の値を取得
+    Dim infoFileName As Variant
+    Dim infoWorkbook As Workbook
+    Dim infoWs As Worksheet
+    Dim infoLastRow As Long
+    Dim infoDict As Object
+
+    infoFileName = Application.GetOpenFilename("Excel Files (*.xls; *.xlsx), *.xls; *.xlsx", , _
+                    "Select the workbook containing additional information")
+
+    If infoFileName <> False Then
+        Set infoWorkbook = Workbooks.Open(infoFileName)
+        Set infoWs = infoWorkbook.Sheets(1)
+        infoLastRow = infoWs.Cells(infoWs.Rows.Count, "A").End(xlUp).Row
+
+        Set infoDict = CreateObject("Scripting.Dictionary")
+        For Each cell In infoWs.Range("A2:A" & infoLastRow)
+            key = CStr(cell.Value)
+            If Not infoDict.Exists(key) Then
+                infoDict.Add key, infoWs.Cells(cell.Row, "T").Value
+            End If
+        Next cell
+
+        For rowIndex = 2 To outputRow - 1
+            key = CStr(newWs.Cells(rowIndex, "A").Value)
+            If infoDict.Exists(key) Then
+                newWs.Cells(rowIndex, "I").Value = infoDict(key)
+            End If
+        Next rowIndex
+
+        infoWorkbook.Close SaveChanges:=False
+    End If
 
     ' 5. オートフィルターとソート
     newWs.Range("A1").AutoFilter
