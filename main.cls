@@ -118,14 +118,26 @@ Application.EnableEvents = False
     
     newWs.Range("G1").Value = "Qty.BOM Data"
     newWs.Range("G1").Interior.Color = RGB(255, 165, 0) ' オレンジ
-    
+
+    ' 4b. メモ列の追加 (I列)、プルダウンリスト設定、セルを緑色に設定
+    newWs.Columns("I").Insert
+    newWs.Range("I1").Value = "memo"
+    newWs.Range("I:I").Interior.Color = RGB(0, 255, 0) ' 緑
+    With newWs.Range("I2:I" & outputRow - 1).Validation
+        .Delete
+        .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:=xlBetween, _
+            Formula1:="Option1,Option2,Option3"
+        .IgnoreBlank = True
+        .InCellDropdown = True
+    End With
+
     ' 5. オートフィルターとソート
     newWs.Range("A1").AutoFilter
     ' ソートキーがRange("E1")なので、この時点でのE列のヘッダーがソート対象になる
     newWs.Range("A1").Sort key1:=newWs.Range("E1"), order1:=xlAscending, Header:=True
-    
-    ' 6. 列幅の自動調整 (A:H列までで十分か、必要に応じて調整)
-    newWs.Columns("A:H").EntireColumn.AutoFit
+
+    ' 6. 列幅の自動調整 (A:I列までで十分か、必要に応じて調整)
+    newWs.Columns("A:I").EntireColumn.AutoFit
     
     ' 7. 1行目でウインドウ枠の固定をする
     newWs.Activate ' 新しいシートをアクティブにする
